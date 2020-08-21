@@ -16,6 +16,10 @@ class _TestResources:
 
     NewInt = typing.NewType("NewType", int)
 
+    TypeStr = typing.TypeVar('TypeStr', bound=str)
+
+    TypeStrOrBool = typing.TypeVar('TypeStrOrBool', str, bool)
+
     def plain_unannotated_callable(a, b):
         pass
 
@@ -31,6 +35,33 @@ class _TestResources:
         "a": NewInt,
         "b": int,
         "return": str,
+    }
+
+    def typestr_str_returns_int(a, b):
+        pass
+
+    typestr_str_returns_int.__annotations__ = {
+        "a": str,
+        "b": str,
+        "return": int
+    }
+
+    def typestrorbool_bool_str_returns_int(a, b):
+        pass
+
+    typestrorbool_bool_str_returns_int.__annotations__ = {
+        "a": bool,
+        "b": str,
+        "return": int
+    }
+
+    def typestrorbool_str_str_returns_int(a, b):
+        pass
+
+    typestrorbool_str_str_returns_int.__annotations__ = {
+        "a": str,
+        "b": str,
+        "return": int
     }
 
     def int_int_returns_int(a, b):
@@ -101,6 +132,21 @@ class _TestResources:
             "typed_callable_value_has_newtype",
             _TestResources.newint_int_returns_str,
             typing.Callable[[int, int], str],
+        ),
+        (
+            "typed_callable_val_has_typevar_bound",
+            _TestResources.typestr_str_returns_int,
+            typing.Callable[[_TestResources.TypeStr, str], int]
+        ),
+        (
+            "typed_callable_val_has_typevar_constraints_str",
+            _TestResources.typestrorbool_str_str_returns_int,
+            typing.Callable[[_TestResources.TypeStrOrBool, str], int]
+        ),
+        (
+            "typed_callable_val_has_typevar_constraints_bool",
+            _TestResources.typestrorbool_bool_str_returns_int,
+            typing.Callable[[_TestResources.TypeStrOrBool, str], int]
         ),
         (
             "typed_callable_",

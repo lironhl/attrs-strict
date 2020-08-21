@@ -8,7 +8,7 @@ from ._error import (
     CallableError,
     TupleError,
     TypeValidationError,
-    UnionError,
+    UnionLikeError,
 )
 from ._type_validation import type_validator
 from ._version import __version__  # noqa
@@ -17,7 +17,7 @@ __all__ = [
     "type_validator",
     "AttributeTypeError",
     "BadTypeError",
-    "UnionError",
+    "UnionLikeError",
     "TupleError",
     "TypeValidationError",
     "CallableError",

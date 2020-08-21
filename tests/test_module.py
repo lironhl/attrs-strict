@@ -6,7 +6,7 @@ def test_version():
     assert hasattr(attrs_strict, "type_validator")
     assert hasattr(attrs_strict, "AttributeTypeError")
     assert hasattr(attrs_strict, "BadTypeError")
-    assert hasattr(attrs_strict, "UnionError")
+    assert hasattr(attrs_strict, "UnionLikeError")
     assert hasattr(attrs_strict, "TupleError")
     assert hasattr(attrs_strict, "TypeValidationError")
 

@@ -3,14 +3,14 @@ import typing
 
 import attr
 
-from ._commons import is_newtype
+from ._commons import is_newtype, is_typevar
 from ._error import (
     AttributeTypeError,
     BadTypeError,
     CallableError,
     EmptyError,
     TupleError,
-    UnionError,
+    UnionLikeError,
 )
 
 try:
@@ -120,7 +120,12 @@ def _validate_elements(attribute, value, expected_type):
         raise AttributeTypeError(value, attribute)
 
     if base_type == typing.Union:  # type: ignore
-        _handle_union(attribute, value, expected_type)
+        if is_typevar(expected_type):
+            _handle_union_like(attribute, value, expected_type,
+                               expected_type.__constraints__)
+        else:
+            _handle_union_like(attribute, value, expected_type,
+                               expected_type.__args__)
     elif base_type in SimilarTypes.List:
         _handle_set_or_list(attribute, value, expected_type)
     elif base_type in SimilarTypes.Dict:
@@ -136,6 +141,15 @@ def _get_base_type(type_):
         base_type = type_.__origin__  # type: typing.Type[typing.Any]
     elif is_newtype(type_):
         base_type = type_.__supertype__
+    elif is_typevar(type_):
+        bound = type_.__bound__
+        constraints = type_.__constraints__
+
+        if bound is not None:
+            return bound
+        elif len(constraints) != 0:
+            return typing.Union
+        return typing.Any
     else:
         base_type = type_
 
@@ -143,18 +157,24 @@ def _get_base_type(type_):
 
 
 def _type_matching(actual, expected):
-    actual = actual.__supertype__ if is_newtype(actual) else actual
-    expected = expected.__supertype__ if is_newtype(expected) else expected
+    actual_type = actual
+    if is_newtype(actual) or is_typevar(actual):
+        actual_type = _get_base_type(actual)
 
-    if expected == actual or expected == typing.Any:
+    expected_type = expected
+    if is_newtype(expected) or is_typevar(expected):
+        expected_type = _get_base_type(expected)
+
+    if expected_type == actual_type or expected_type == typing.Any:
         return True
 
     base_type = _get_base_type(expected)
 
     if base_type == typing.Union:  # type: ignore
+        expected_types = expected.__constraints__ if is_typevar(expected) else expected.__args__
         return any(
             _type_matching(actual, expected_candidate)
-            for expected_candidate in expected.__args__
+            for expected_candidate in expected_types
         )
 
     elif base_type in (
@@ -231,21 +251,21 @@ def _handle_tuple(attribute, container, expected_type):
             raise error
 
 
-def _handle_union(attribute, value, expected_type):
-    union_has_none_type = any(
-        elem is None.__class__ for elem in expected_type.__args__
+def _handle_union_like(attribute, value, union_like_type, expected_types):
+    union_like_has_none_type = any(
+        elem is None.__class__ for elem in expected_types
     )
 
-    if value is None and union_has_none_type:
+    if value is None and union_like_has_none_type:
         return
 
-    for arg in expected_type.__args__:
+    for expected_type in expected_types:
         try:
-            _validate_elements(attribute, value, arg)
+            _validate_elements(attribute, value, expected_type)
             return
         except ValueError:
             pass
-    raise UnionError(value, attribute.name, expected_type)
+    raise UnionLikeError(value, attribute.name, union_like_type)
 
 
 # -----------------------------------------------------------------------------

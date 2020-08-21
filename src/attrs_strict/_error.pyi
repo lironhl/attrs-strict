@@ -44,7 +44,7 @@ class TupleError(BadTypeError):
     def __str__(self) -> str: ...
     def _more_or_less(self) -> str: ...
 
-class UnionError(BadTypeError):
+class UnionLikeError(BadTypeError):
     def __init__(
         self,
         container: typing.Any,

@@ -127,16 +127,16 @@ class TupleError(BadTypeError):
         return "more" if len(self.container) > len(self.tuple_types) else "less"
 
 
-class UnionError(BadTypeError):
+class UnionLikeError(BadTypeError):
     def __init__(self, container, attribute, expected_type):
-        super(UnionError, self).__init__()
+        super(UnionLikeError, self).__init__()
         self.attribute = attribute
         self.container = container
         self.expected_type = expected_type
 
     def __str__(self):
         error = "Value of {} {} is not of type {}".format(
-            self.attribute, self.container, self.expected_type
+            self.attribute, self.container, format_type(self.expected_type)
         )
 
         return self._render(error)

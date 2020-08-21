@@ -3,6 +3,6 @@ from ._error import (
     BadTypeError as BadTypeError,
     TupleError as TupleError,
     TypeValidationError as TypeValidationError,
-    UnionError as UnionError,
+    UnionLikeError as UnionLikeError,
 )
 from ._type_validation import type_validator as type_validator
